@@ -75,7 +75,7 @@ flags.DEFINE_string(
     "A type of model. Possible options are: small, medium, large.")
 flags.DEFINE_string("data_path", 'D:/py_project/Tensorflow/s-lstm/data/',
                     "Where the training/test data is stored.")
-flags.DEFINE_string("save_path", 'D:/py_project/Tensorflow/s-lstm/data/res/',
+flags.DEFINE_string("save_path", 'D:/py_project/Tensorflow/s-lstm/data/newres/',
                     "Model output directory.")
 flags.DEFINE_bool("use_fp16", False,
                   "Train using 16-bit floats instead of 32bit floats")
@@ -91,18 +91,23 @@ class PTBInput(object):
     """The input data."""
 
     def __init__(self, config, data, word_to_id=None, name=None,isDecode=False,):
-        #todo 为了测试加的
+        #todo fix me
         if isDecode:
-            self.num_steps=len(data)
+            # print(data)
+            # self.num_steps=len(data)
             X=[[0]]
             X[0]=data
-            data = tf.convert_to_tensor(X, name="data", dtype=tf.int32)
+            self.X=self.Y=X
+            self.HelperMatrix=codereader.stackHelper(X,word_to_id['{'],word_to_id['}'])
+            # print(self.HelperMatrix)
+            self.batch_size = config.batch_size
+            # data = tf.convert_to_tensor(X, name="data", dtype=tf.int32)
             # data=tf.convert_to_tensor(data, name="data", dtype=tf.int32)
-            self.input_data=data
-            self.targets=data #这个没有用
-            self.batch_size=1
-
-            self.epoch_size=1
+            # self.input_data=data
+            # self.targets=data #这个没有用
+            # self.batch_size=1
+            #
+            # self.epoch_size=1
         else:
             self.batch_size = batch_size = config.batch_size
             # self.num_steps = num_steps = config.num_steps
@@ -175,26 +180,6 @@ class PTBModel(object):
                     tf.get_variable_scope().reuse_variables()
 
                 #todo ------- 判断是否要push或者pop ----------
-                # if HelperMatrix[self.index][time_step]=='START':
-                # # self.acc=acc=tf.equal(tf.reshape(inputs[:, time_step, :],[-1]), START_EMBEDDING, name=None)
-                # # acc=tf.reduce_mean(tf.cast(acc, tf.float32))
-                # # if acc==1:
-                # #     print('push')
-                #     self.state_stack.push(state)
-                #     state = self._initial_state #ResetState
-                #     # print('STACK: ')
-                #     # print(self.state_stack.peek())
-                # elif HelperMatrix[self.index][time_step]=='END':
-                # # elif tf.equal(tf.reshape(inputs[:, time_step, :],[-1]), END_EMBEDDING, name=None) ==1:
-                #     state=self.state_stack.pop()
-                #     # print("POP")
-                # else:
-                #     # print('NONE')
-                #     pass
-                # # self.index+=1
-                #todo ----------------------------------------
-
-                #todo ---------------new--------------
                 if time_step<self.num_steps-1:
                     if HelperMatrix[self.index][time_step+1]=='START':
                         newState=self._initial_state
@@ -213,9 +198,8 @@ class PTBModel(object):
                 else:
                     # print('NONE')
                     pass
+                #------------------------------------
 
-
-                #todo ------------------------------------
                 (cell_output, state) = cell(inputs[:, time_step, :], state)
                 outputs.append(cell_output)
 
@@ -549,9 +533,7 @@ def train():
                     train_input = PTBInput(config=config, data=train_data,word_to_id=word_to_id, name="TrainInput")
                     with tf.variable_scope("Model", reuse=None, initializer=initializer):
                         m = PTBModel(is_training=True, config=config, input_=train_input,index=step,vocsize=voc_size)
-                    # tf.scalar_summary("Training Loss", m.cost)
                     tf.summary.scalar("Training Loss", m.cost)
-                    # tf.scalar_summary("Learning Rate", m.lr)
                     tf.summary.scalar("Learning Rate", m.lr)
 
                     ckpt = tf.train.get_checkpoint_state(FLAGS.save_path)
@@ -560,35 +542,34 @@ def train():
                     else:
                         print("Created model with fresh parameters.")
 
-                # with tf.name_scope("Test"):
-                #     test_input = PTBInput(config=eval_config, data=test_data,word_to_id=word_to_id, name="TestInput")
-                #     with tf.variable_scope("Model", reuse=True, initializer=initializer):
-                #         mtest = PTBModel(is_training=False, config=eval_config,
-                #                          input_=test_input,word_to_id=word_to_id)
-                #
-                #
-                # with tf.name_scope("Decode"):
-                #     token=[]
-                #     token.append('for')
-                #     token.append('i')
-                #     print(token)
-                #     _input_data= []
-                #     _input_data.append(word_to_id[token[0]])
-                #     _input_data.append(word_to_id[token[1]])
-                #     decode_input=PTBInput(config=None, data=_input_data, name="DecodeInput",isDecode=True)
-                #     with tf.variable_scope("Model", reuse=True, initializer=initializer):
-                #         decode_model=PTBModel(False,config,decode_input,word_to_id=word_to_id)
-                #     # decode_model=PTBModel(False,config,decode_input)
-                #
-                #     # decode_model=PTBModel(False,config,decode_input)
-                #     #todo test时候在这里取参数
-                #     ckpt = tf.train.get_checkpoint_state(FLAGS.save_path)
-                #     if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
-                #         print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
-                #         # model.saver.restore(session, ckpt.model_checkpoint_path)
-                #     else:
-                #         print("Created model with fresh parameters.")
-                #         # session.run(tf.global_variables_initializer())
+                with tf.name_scope("Test"):
+                    test_input = PTBInput(config=config, data=test_data,word_to_id=word_to_id, name="TestInput")
+                    with tf.variable_scope("Model", reuse=True, initializer=initializer):
+                        mtest = PTBModel(is_training=False, config=config,
+                                         input_=test_input,index=step,vocsize=voc_size)
+
+                with tf.name_scope("Decode"):
+                    token=[]
+                    token.append(word_to_id['Module'])
+                    token.append(word_to_id['{'])
+                    # print(token)
+                    _input_data= token
+                    decode_input=PTBInput(config=config, data=_input_data, word_to_id=word_to_id,name="DecodeInput",isDecode=True)
+                    with tf.variable_scope("Model", reuse=True, initializer=initializer):
+                        decode_model=PTBModel(is_training=False, config=config,
+                                              input_=decode_input,vocsize=voc_size,index=0)
+                    # decode_model=PTBModel(False,config,decode_input)
+
+                    # decode_model=PTBModel(False,config,decode_input)
+                    #todo test时候在这里取参数
+                    ckpt = tf.train.get_checkpoint_state(FLAGS.save_path)
+                    if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
+                        print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
+                        # model.saver.restore(session, ckpt.model_checkpoint_path)
+                    else:
+                        print("Created model with fresh parameters.")
+                        # session.run(tf.global_variables_initializer())
+
                 Config = tf.ConfigProto()
                 Config.gpu_options.allow_growth = True
                 sv = tf.train.Supervisor(logdir=FLAGS.save_path)
@@ -605,8 +586,8 @@ def train():
 
                     print("Epoch: %d Train Perplexity: %.3f" % (epoch + 1, train_perplexity))
 
-                    # test_perplexity = run_epoch(session, mtest,'test',id_to_word=id_to_word)
-                    # print("Test Perplexity: %.3f" % test_perplexity)
+                    test_perplexity = run_epoch(session, mtest,'test',id_to_word=id_to_word,step=step)
+                    print("Test Perplexity: %.3f" % test_perplexity)
 
                 # test_perplexity = run_epoch(session, mtest,'test',id_to_word=id_to_word)
                 # print("Test Perplexity: %.3f" % test_perplexity)
@@ -617,7 +598,8 @@ def train():
 #补全模型
 def decode():
     config = get_config()
-    word_to_id=codereader.get_word_to_id(FLAGS.data_path,config.vocab_size-1)
+    word_to_id=codereader.get_word_to_id(FLAGS.data_path)
+    vocsize=len(word_to_id)
     id_to_word=reverseDic(word_to_id)
 
     while True:
@@ -632,9 +614,10 @@ def decode():
                 # print(token)
                 for i in range(len(token)):
                     token[i]=word_to_id[token[i]]
-                decode_input=PTBInput(config=None, data=token, name="DecodeInput",isDecode=True)
+                decode_input=PTBInput(config=config, data=token, word_to_id=word_to_id, name="DecodeInput",isDecode=True)
                 with tf.variable_scope("Model", reuse=None, initializer=initializer):
-                    decode_model=PTBModel(False,config,decode_input)
+                    decode_model=PTBModel(is_training=False, config=config,
+                                          input_=decode_input,vocsize=vocsize,index=0)
                 # decode_model=PTBModel(False,config,decode_input)
 
                 # decode_model=PTBModel(False,config,decode_input)

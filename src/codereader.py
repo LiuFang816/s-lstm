@@ -160,18 +160,18 @@ def Batch_producer(X,Y,index):
 
 
 #
-# f=open('D:/py_project/Tensorflow/s-lstm/data/test.txt')
-# f1=open('D:/py_project/Tensorflow/s-lstm/data/new_train.txt','w')
-# lineNUM=0
-# while 1:
-#     line=f.readline()
-#     if not line:
-#         break
-#     code=line.split(' ')
-#     if lineNUM<600:
-#         if len(code)<=600:
-#             f1.write(line)
-#             lineNUM+=1
-#     else: break
+f=open('D:/py_project/Tensorflow/s-lstm/data/test.txt')
+f1=open('D:/py_project/Tensorflow/s-lstm/data/new_test.txt','w')
+lineNUM=0
+while 1:
+    line=f.readline()
+    if not line:
+        break
+    code=line.split(' ')
+    if lineNUM<600:
+        if len(code)<=600:
+            f1.write(line)
+            lineNUM+=1
+    else: break
 
 
