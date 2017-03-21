@@ -22,22 +22,27 @@ def _build_vocab(filename):
     # a=sum(counter.values())
     count_pairs = sorted(counter.items(), key=lambda x: (-x[1], x[0]))
     words, values = list(zip(*count_pairs))
-
+    words=words[0:4998]
     word_to_id = dict(zip(words, range(len(words))))
     word_to_id['ENDTOK']=len(word_to_id)
+    word_to_id['UNK']=len(word_to_id)
     return word_to_id
 
-# vocab=_build_vocab('D:/py_project/Tensorflow/s-lstm/data/train.txt')
+# vocab=_build_vocab('D:/py_project/Tensorflow/myEx/s-lstm/NTwithName/data/train.txt')
+# print(len(vocab))
 # vocab = sorted(vocab.items(), key=lambda d: d[1])
 # print(vocab)
 
-# data = _read_words('D:/py_project/Tensorflow/s-lstm/data/test.txt')
+# data = _read_words('D:/py_project/Tensorflow/myEx/s-lstm/NTwithName/data/train.txt')
 # counter = collections.Counter(data)
-# # print(counter)
-# print(len(counter))
+# a=sum(counter.values())
+# print(a)
 # count_pairs = sorted(counter.items(), key=lambda x: (-x[1], x[0]))
 # words, values = list(zip(*count_pairs))
-# print(words)
+# b=sum(values[0:1000])
+# print(b)
+# print(b*1.0/a)
+#10000: 0.9426364203253237 #5000: 0.9305474354150193 #1000: 0.8973581380946334
 
 #将文件中的token转换为id
 def _file_to_word_ids(filename, word_to_id):
@@ -46,10 +51,8 @@ def _file_to_word_ids(filename, word_to_id):
     for word in data:
         if word in word_to_id:
             wordId.append(word_to_id[word])
-        # else:
-        #     print(word)
-        #     print('not in voc')
-    # return [word_to_id[word] for word in data if word in word_to_id]
+        else:
+            wordId.append(word_to_id['UNK'])
     return wordId
 
 # #得到token id  10为endmarker
@@ -79,7 +82,7 @@ def raw_data(data_path=None,word_to_id=None):
     return train_data,test_data,vocabulary_size,end_id,END_ID,left_id,right_id
 
 def get_word_to_id(data_path=None):
-    train_path=os.path.join(data_path,"test.txt")
+    train_path=os.path.join(data_path,"train.txt")
     word_to_id=_build_vocab(train_path)
     return word_to_id
 
@@ -160,18 +163,18 @@ def Batch_producer(X,Y,index):
 
 
 #
-f=open('D:/py_project/Tensorflow/s-lstm/data/test.txt')
-f1=open('D:/py_project/Tensorflow/s-lstm/data/new_test.txt','w')
-lineNUM=0
-while 1:
-    line=f.readline()
-    if not line:
-        break
-    code=line.split(' ')
-    if lineNUM<600:
-        if len(code)<=600:
-            f1.write(line)
-            lineNUM+=1
-    else: break
+# f=open('D:/py_project/Tensorflow/myEx/s-lstm/NTwithName/data/train.txt')
+# f1=open('D:/py_project/Tensorflow/myEx/s-lstm/NTwithName/data/new_train.txt','w')
+# lineNUM=0
+# while 1:
+#     line=f.readline()
+#     if not line:
+#         break
+#     code=line.split(' ')
+#     if lineNUM<600:
+#         if len(code)<=600:
+#             f1.write(line)
+#             lineNUM+=1
+#     else: break
 
 

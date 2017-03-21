@@ -8,7 +8,7 @@
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distribu162.105.30.184ted on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -62,9 +62,8 @@ import time
 
 import numpy as np
 import tensorflow as tf
-from src import codereader
-
-from NT_No_Val.src import Stack
+from NTnoName.src import codereader
+from NTnoName.src import Stack
 
 # import codereader
 
@@ -77,11 +76,11 @@ flags.DEFINE_string(
     "A type of model. Possible options are: small, medium, large.")
 flags.DEFINE_string("data_path", 'D:/py_project/Tensorflow/s-lstm/data/',
                     "Where the training/test data is stored.")
-flags.DEFINE_string("save_path", 'D:/py_project/Tensorflow/s-lstm/data/res/',
+flags.DEFINE_string("save_path", 'D:/py_project/Tensorflow/s-lstm/data/resnoresetH/',
                     "Model output directory.")
 flags.DEFINE_bool("use_fp16", False,
                   "Train using 16-bit floats instead of 32bit floats")
-flags.DEFINE_bool("decode", True,
+flags.DEFINE_bool("decode", False,
                             "Set to True for interactive decoding.")
 flags.DEFINE_bool("generate",False,"Set to True for interactive generating.")
 FLAGS = flags.FLAGS
@@ -182,18 +181,18 @@ class PTBModel(object):
                     tf.get_variable_scope().reuse_variables()
 
                 #todo ------- 判断是否要push或者pop ----------
-                if time_step<self.num_steps-1:
-                    if HelperMatrix[self.index][time_step+1]=='START':
-                        newState=self._initial_state
-                        # print("test")
-                        (cell_output, newState) = cell(inputs[:, time_step, :], newState)
-                        tf.get_variable_scope().reuse_variables()
-                        # (cell_output, state) = cell(inputs[:, time_step, :], state)
-                        # print("test2")
+                # if time_step<self.num_steps-1:
+                #     if HelperMatrix[self.index][time_step+1]=='START':
+                #         newState=self._initial_state
+                #         # print("test")
+                #         (cell_output, newState) = cell(inputs[:, time_step, :], newState)
+                #         tf.get_variable_scope().reuse_variables()
+                #         # (cell_output, state) = cell(inputs[:, time_step, :], state)
+                #         # print("test2")
                 if HelperMatrix[self.index][time_step]=='START':
                     self.state_stack.push(state)
                     # print("PUSH")
-                    state = newState
+                    # state = newState
                 elif HelperMatrix[self.index][time_step]=='END':
                     # elif tf.equal(tf.reshape(inputs[:, time_step, :],[-1]), END_EMBEDDING, name=None) ==1:
                     state=self.state_stack.pop()

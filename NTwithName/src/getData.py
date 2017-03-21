@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-#todo 删除小于10（numsteps）个token的行,这里目前numsteps还不是灵活的
 def DataFilter(fname1,fname2):
     f1=open(fname1)
     f2=open(fname2,'w')
@@ -18,12 +17,12 @@ def DataFilter(fname1,fname2):
     f1.close()
     f2.close()
 
-DataFilter('D:/py_project/Tensorflow/s-lstm/data/res-3.8W-new.txt','D:/py_project/Tensorflow/s-lstm/data/codeGT10.txt')
+# DataFilter('D:/py_project/Tensorflow/s-lstm/data/res-3.8W-new.txt','D:/py_project/Tensorflow/s-lstm/data/codeGT10.txt')
 
 def SplitData(fname):
     f=open(fname)
-    trainfile=open('D:/py_project/Tensorflow/s-lstm/data/train.txt','w')
-    testfile=open('D:/py_project/Tensorflow/s-lstm/data/test.txt','w')
+    trainfile=open('D:/py_project/Tensorflow/myEx/s-lstm/NTwithName/data/train.txt','w')
+    testfile=open('D:/py_project/Tensorflow/myEx/s-lstm/NTwithName/data/test.txt','w')
     code=f.read().split('\n')
     splitIndex=int(0.7*len(code))
     trainData=code[:splitIndex]
@@ -39,7 +38,7 @@ def SplitData(fname):
     trainfile.close()
     testfile.close()
 
-SplitData('D:/py_project/Tensorflow/s-lstm/data/codeGT10.txt')
+SplitData('D:/py_project/Tensorflow/myEx/s-lstm/NTwithName/data/res-with-name.txt')
 
 
 

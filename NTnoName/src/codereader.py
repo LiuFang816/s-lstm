@@ -79,7 +79,7 @@ def raw_data(data_path=None,word_to_id=None):
     return train_data,test_data,vocabulary_size,end_id,END_ID,left_id,right_id
 
 def get_word_to_id(data_path=None):
-    train_path=os.path.join(data_path,"test.txt")
+    train_path=os.path.join(data_path,"train.txt")
     word_to_id=_build_vocab(train_path)
     return word_to_id
 
@@ -160,18 +160,18 @@ def Batch_producer(X,Y,index):
 
 
 #
-f=open('D:/py_project/Tensorflow/s-lstm/data/test.txt')
-f1=open('D:/py_project/Tensorflow/s-lstm/data/new_test.txt','w')
-lineNUM=0
-while 1:
-    line=f.readline()
-    if not line:
-        break
-    code=line.split(' ')
-    if lineNUM<600:
-        if len(code)<=600:
-            f1.write(line)
-            lineNUM+=1
-    else: break
+# f=open('D:/py_project/Tensorflow/s-lstm/data/test.txt')
+# f1=open('D:/py_project/Tensorflow/s-lstm/data/new_test.txt','w')
+# lineNUM=0
+# while 1:
+#     line=f.readline()
+#     if not line:
+#         break
+#     code=line.split(' ')
+#     if lineNUM<600:
+#         if len(code)<=600:
+#             f1.write(line)
+#             lineNUM+=1
+#     else: break
 
 

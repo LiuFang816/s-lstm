@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-#todo 删除小于10（numsteps）个token的行,这里目前numsteps还不是灵活的
 def DataFilter(fname1,fname2):
     f1=open(fname1)
     f2=open(fname2,'w')
@@ -39,7 +38,7 @@ def SplitData(fname):
     trainfile.close()
     testfile.close()
 
-SplitData('D:/py_project/Tensorflow/s-lstm/data/codeGT10.txt')
+SplitData('D:/py_project/Tensorflow/s-lstm/data/XXX.txt')
 
 
 
