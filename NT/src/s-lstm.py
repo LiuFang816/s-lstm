@@ -57,13 +57,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import sys
 import time
 
 import numpy as np
 import tensorflow as tf
-import sys
-from src import Stack
 from src import codereader
+
+from NT_No_Val.src import Stack
+
 # import codereader
 
 
@@ -75,11 +77,11 @@ flags.DEFINE_string(
     "A type of model. Possible options are: small, medium, large.")
 flags.DEFINE_string("data_path", 'D:/py_project/Tensorflow/s-lstm/data/',
                     "Where the training/test data is stored.")
-flags.DEFINE_string("save_path", 'D:/py_project/Tensorflow/s-lstm/data/newres/',
+flags.DEFINE_string("save_path", 'D:/py_project/Tensorflow/s-lstm/data/res/',
                     "Model output directory.")
 flags.DEFINE_bool("use_fp16", False,
                   "Train using 16-bit floats instead of 32bit floats")
-flags.DEFINE_bool("decode", False,
+flags.DEFINE_bool("decode", True,
                             "Set to True for interactive decoding.")
 flags.DEFINE_bool("generate",False,"Set to True for interactive generating.")
 FLAGS = flags.FLAGS
@@ -98,7 +100,7 @@ class PTBInput(object):
             X=[[0]]
             X[0]=data
             self.X=self.Y=X
-            self.HelperMatrix=codereader.stackHelper(X,word_to_id['{'],word_to_id['}'])
+            self.HelperMatrix= codereader.stackHelper(X, word_to_id['{'], word_to_id['}'])
             # print(self.HelperMatrix)
             self.batch_size = config.batch_size
             # data = tf.convert_to_tensor(X, name="data", dtype=tf.int32)
@@ -112,8 +114,8 @@ class PTBInput(object):
             self.batch_size = batch_size = config.batch_size
             # self.num_steps = num_steps = config.num_steps
 
-            self.X,self.Y,self.epoch_size=codereader.split_data(data,word_to_id)
-            self.HelperMatrix=codereader.stackHelper(self.X,word_to_id['{'],word_to_id['}'])
+            self.X,self.Y,self.epoch_size= codereader.split_data(data, word_to_id)
+            self.HelperMatrix= codereader.stackHelper(self.X, word_to_id['{'], word_to_id['}'])
             # self.input_data, self.targets,self.num_steps= codereader.Batch_producer(self.X, self.Y, self.INDEX)
 
 
@@ -128,7 +130,7 @@ class PTBModel(object):
         self.global_step = tf.Variable(0, trainable=False)
         self.X = input_.X
         self.Y = input_.Y
-        self._input_data,self._targets,self.num_steps=codereader.Batch_producer(self.X, self.Y, index)
+        self._input_data,self._targets,self.num_steps= codereader.Batch_producer(self.X, self.Y, index)
         HelperMatrix=input_.HelperMatrix
         # print(HelperMatrix)
 
@@ -149,7 +151,7 @@ class PTBModel(object):
         self._initial_state = cell.zero_state(batch_size, data_type())
 
         #todo -------STACK-------------------
-        self.state_stack=Stack.Stack()
+        self.state_stack= Stack.Stack()
         #todo -------------------------------
 
         with tf.device("/cpu:0"):
@@ -515,8 +517,8 @@ def train():
 
     eval_config.batch_size = 1
     # eval_config.num_steps = 10
-    word_to_id=codereader.get_word_to_id(FLAGS.data_path)
-    raw_data = codereader.raw_data(FLAGS.data_path,word_to_id)
+    word_to_id= codereader.get_word_to_id(FLAGS.data_path)
+    raw_data = codereader.raw_data(FLAGS.data_path, word_to_id)
     train_data,test_data, voc_size,end_id,_, _, _ = raw_data
 
     id_to_word=reverseDic(word_to_id)
@@ -541,34 +543,34 @@ def train():
                         print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
                     else:
                         print("Created model with fresh parameters.")
+                #todo 目前估计加了test内存明显不够，可以考虑后期训练好之后再用test换掉train进行测试
+                # with tf.name_scope("Test"):
+                #     test_input = PTBInput(config=config, data=test_data,word_to_id=word_to_id, name="TestInput")
+                #     with tf.variable_scope("Model", reuse=True, initializer=initializer):
+                #         mtest = PTBModel(is_training=False, config=config,
+                #                          input_=test_input,index=step,vocsize=voc_size)
 
-                with tf.name_scope("Test"):
-                    test_input = PTBInput(config=config, data=test_data,word_to_id=word_to_id, name="TestInput")
-                    with tf.variable_scope("Model", reuse=True, initializer=initializer):
-                        mtest = PTBModel(is_training=False, config=config,
-                                         input_=test_input,index=step,vocsize=voc_size)
-
-                with tf.name_scope("Decode"):
-                    token=[]
-                    token.append(word_to_id['Module'])
-                    token.append(word_to_id['{'])
-                    # print(token)
-                    _input_data= token
-                    decode_input=PTBInput(config=config, data=_input_data, word_to_id=word_to_id,name="DecodeInput",isDecode=True)
-                    with tf.variable_scope("Model", reuse=True, initializer=initializer):
-                        decode_model=PTBModel(is_training=False, config=config,
-                                              input_=decode_input,vocsize=voc_size,index=0)
-                    # decode_model=PTBModel(False,config,decode_input)
-
-                    # decode_model=PTBModel(False,config,decode_input)
-                    #todo test时候在这里取参数
-                    ckpt = tf.train.get_checkpoint_state(FLAGS.save_path)
-                    if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
-                        print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
-                        # model.saver.restore(session, ckpt.model_checkpoint_path)
-                    else:
-                        print("Created model with fresh parameters.")
-                        # session.run(tf.global_variables_initializer())
+                # with tf.name_scope("Decode"):
+                #     token=[]
+                #     token.append(word_to_id['Module'])
+                #     token.append(word_to_id['{'])
+                #     # print(token)
+                #     _input_data= token
+                #     decode_input=PTBInput(config=config, data=_input_data, word_to_id=word_to_id,name="DecodeInput",isDecode=True)
+                #     with tf.variable_scope("Model", reuse=True, initializer=initializer):
+                #         decode_model=PTBModel(is_training=False, config=config,
+                #                               input_=decode_input,vocsize=voc_size,index=0)
+                #     # decode_model=PTBModel(False,config,decode_input)
+                #
+                #     # decode_model=PTBModel(False,config,decode_input)
+                #     #todo test时候在这里取参数
+                #     ckpt = tf.train.get_checkpoint_state(FLAGS.save_path)
+                #     if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
+                #         print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
+                #         # model.saver.restore(session, ckpt.model_checkpoint_path)
+                #     else:
+                #         print("Created model with fresh parameters.")
+                #         # session.run(tf.global_variables_initializer())
 
                 Config = tf.ConfigProto()
                 Config.gpu_options.allow_growth = True
@@ -586,8 +588,8 @@ def train():
 
                     print("Epoch: %d Train Perplexity: %.3f" % (epoch + 1, train_perplexity))
 
-                    test_perplexity = run_epoch(session, mtest,'test',id_to_word=id_to_word,step=step)
-                    print("Test Perplexity: %.3f" % test_perplexity)
+                    # test_perplexity = run_epoch(session, mtest,'test',id_to_word=id_to_word,step=step)
+                    # print("Test Perplexity: %.3f" % test_perplexity)
 
                 # test_perplexity = run_epoch(session, mtest,'test',id_to_word=id_to_word)
                 # print("Test Perplexity: %.3f" % test_perplexity)
@@ -598,7 +600,7 @@ def train():
 #补全模型
 def decode():
     config = get_config()
-    word_to_id=codereader.get_word_to_id(FLAGS.data_path)
+    word_to_id= codereader.get_word_to_id(FLAGS.data_path)
     vocsize=len(word_to_id)
     id_to_word=reverseDic(word_to_id)
 
@@ -606,7 +608,7 @@ def decode():
         with tf.Graph().as_default():
             initializer = tf.random_uniform_initializer(-config.init_scale,
                                                         config.init_scale)
-            with tf.name_scope("Decode"):
+            with tf.name_scope("Train"):
                 # tf.get_variable_scope().reuse_variables()
                 sys.stdout.write("> ")
                 sys.stdout.flush()
@@ -614,7 +616,7 @@ def decode():
                 # print(token)
                 for i in range(len(token)):
                     token[i]=word_to_id[token[i]]
-                decode_input=PTBInput(config=config, data=token, word_to_id=word_to_id, name="DecodeInput",isDecode=True)
+                decode_input=PTBInput(config=config, data=token, word_to_id=word_to_id, name="TrainInput",isDecode=True)
                 with tf.variable_scope("Model", reuse=None, initializer=initializer):
                     decode_model=PTBModel(is_training=False, config=config,
                                           input_=decode_input,vocsize=vocsize,index=0)
@@ -657,9 +659,9 @@ def decode():
 
 #生成模型
 def generate():
-    choice=['1','2','3','4','5','6','7','8','9','10','q']
+    choice=['1','2','3','4','5','q']
     config = get_config()
-    word_to_id=codereader.get_word_to_id(FLAGS.data_path,config.vocab_size-1)
+    word_to_id= codereader.get_word_to_id(FLAGS.data_path)
     id_to_word=reverseDic(word_to_id)
     sys.stdout.write("> ")
     sys.stdout.flush()
@@ -673,7 +675,7 @@ def generate():
             for i in range(len(token)):
                 print(id_to_word[token[i]],end=' ')
             print('\n')
-            with tf.name_scope("Decode"):
+            with tf.name_scope("Train"):
                 decode_input=PTBInput(config=None, data=token, name="DecodeInput",isDecode=True)
                 with tf.variable_scope("Model", reuse=None, initializer=initializer):
                     decode_model=PTBModel(False,config,decode_input)
@@ -724,9 +726,6 @@ def generate():
                             token.append(word_to_id[x])
                     else:
                         break
-
-
-
 
 
 def main(_):
