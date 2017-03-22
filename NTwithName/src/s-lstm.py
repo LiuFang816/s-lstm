@@ -523,7 +523,6 @@ def train():
 
     id_to_word=reverseDic(word_to_id)
 
-
     for epoch in range(config.max_max_epoch):
         epoch_size=600
         for step in range(epoch_size):#epoch_size
@@ -615,7 +614,10 @@ def decode():
                 token = sys.stdin.readline().strip('\n').split(' ')
                 # print(token)
                 for i in range(len(token)):
-                    token[i]=word_to_id[token[i]]
+                    if token[i] not in word_to_id:
+                        token[i]=word_to_id['UNK']
+                    else:
+                        token[i]=word_to_id[token[i]]
                 decode_input=PTBInput(config=config, data=token, word_to_id=word_to_id, name="TrainInput",isDecode=True)
                 with tf.variable_scope("Model", reuse=None, initializer=initializer):
                     decode_model=PTBModel(is_training=False, config=config,
