@@ -149,7 +149,6 @@ class PTBModel(object):
         cell = tf.nn.rnn_cell.MultiRNNCell([lstm_cell] * config.num_layers, state_is_tuple=True)
 
         self._initial_state = cell.zero_state(batch_size, data_type())
-
         #todo -------STACK-------------------
         self.state_stack= Stack.Stack()
         #todo -------------------------------

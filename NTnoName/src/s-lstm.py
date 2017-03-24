@@ -75,13 +75,13 @@ logging = tf.logging
 flags.DEFINE_string(
     "model", "small",
     "A type of model. Possible options are: small, medium, large.")
-flags.DEFINE_string("data_path", 'D:/py_project/Tensorflow/s-lstm/data/',
+flags.DEFINE_string("data_path", 'D:/py_project/Tensorflow/myEx/s-lstm/NTnoName/data',
                     "Where the training/test data is stored.")
-flags.DEFINE_string("save_path", 'D:/py_project/Tensorflow/s-lstm/data/res/',
+flags.DEFINE_string("save_path", 'D:/py_project/Tensorflow/myEx/s-lstm/NTnoName/data/testres/',
                     "Model output directory.")
 flags.DEFINE_bool("use_fp16", False,
                   "Train using 16-bit floats instead of 32bit floats")
-flags.DEFINE_bool("decode", True,
+flags.DEFINE_bool("decode", False,
                             "Set to True for interactive decoding.")
 flags.DEFINE_bool("generate",False,"Set to True for interactive generating.")
 FLAGS = flags.FLAGS
@@ -147,9 +147,10 @@ class PTBModel(object):
         #定义多层lstm
        # cell=tf.contrib.rnn.MultiRNNCell([lstm_cell] * config.num_layers, state_is_tuple=True)
         cell = tf.nn.rnn_cell.MultiRNNCell([lstm_cell] * config.num_layers, state_is_tuple=True)
+        # cell=lstm_cell
 
         self._initial_state = cell.zero_state(batch_size, data_type())
-
+        print(self.initial_state)
         #todo -------STACK-------------------
         self.state_stack= Stack.Stack()
         #todo -------------------------------
@@ -399,8 +400,9 @@ def run_epoch(session, model, name, eval_op=None, verbose=None,id_to_word=None,i
     #
     feed_dict = {}
     for i, (c, h) in enumerate(model.initial_state):
-        feed_dict[c] = state[i].c
-        feed_dict[h] = state[i].h
+    # for (c,h) in enumerate(model.initial_state):
+        feed_dict[c] = state.c
+        feed_dict[h] = state.h
 
     vals = session.run(fetches, feed_dict)
     cost = vals["cost"]

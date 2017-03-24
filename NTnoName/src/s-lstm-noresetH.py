@@ -191,17 +191,17 @@ class PTBModel(object):
                 #         # print("test2")
                 if HelperMatrix[self.index][time_step]=='START':
                     self.state_stack.push(state)
-                    # print("PUSH")
-                    # state = newState
-                elif HelperMatrix[self.index][time_step]=='END':
+                    (cell_output, state) = cell(inputs[:, time_step, :], state)
+                elif HelperMatrix[self.index][time_step-1]=='END':
                     # elif tf.equal(tf.reshape(inputs[:, time_step, :],[-1]), END_EMBEDDING, name=None) ==1:
                     state=self.state_stack.pop()
+                    (cell_output, state) = cell(inputs[:, time_step, :], state)
                 else:
                     # print('NONE')
-                    pass
+                    (cell_output, state) = cell(inputs[:, time_step, :], state)
                 #------------------------------------
 
-                (cell_output, state) = cell(inputs[:, time_step, :], state)
+                # (cell_output, state) = cell(inputs[:, time_step, :], state)
                 outputs.append(cell_output)
 
         # self.lastStateStack.push(state)
